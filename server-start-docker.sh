@@ -1,9 +1,13 @@
 #!/bin/bash
 
 # Check for local volume mounts
-if [ ! -d "$HOME/jenkins/vol/jenkins-server" ]; then
-  echo "Local volumes not found . . . creating . . ."
-  mkdir -p "$HOME/jenkins/vol/jenkins-server"
+VOL_DIR="$(pwd)/../vol/jenkins-server"
+if [ ! -d "$VOL_DIR" ]; then
+  printf "Local volume directory not found. Creating ... "
+  mkdir -p "$VOL_DIR"
+  echo "Done."
+else
+  echo "Jenkins Server volume directory already exists. Continuing ..."
 fi
 
 # Create 'jenkins-net' docker network
@@ -14,11 +18,12 @@ else
   docker network create jenkins-net
 fi
 
+RDM_NUM=$(( $RANDOM ))
 # Start Jenkins Master Server
 docker run -d \
   -p 8080:8080 \
   -p 50000:50000 \
-  -v ~/jenkins/vol/jenkins-server:/vol/jenkins_home \
-  --name jenkins-server \
+  -v $VOL_DIR:/vol/jenkins_home \
+  --name jenkins-server-$(RDM_NUM) \
   --network jenkins-net \
   jenkins/jenkins:lts
